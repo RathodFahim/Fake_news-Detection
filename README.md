@@ -168,4 +168,4 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with ❤️ using Python & Machine Learning**
+**Built with ❤️ using Python & Machine Learning.**
