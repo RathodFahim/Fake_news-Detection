@@ -3,6 +3,9 @@ Fake News Detection — Streamlit Web Application
 Professional UI with dashboard, single/URL/batch analysis, model insights.
 """
 
+from dotenv import load_dotenv
+load_dotenv()
+
 import streamlit as st
 import pandas as pd
 import numpy as np

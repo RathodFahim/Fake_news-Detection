@@ -39,6 +39,9 @@ Thumbs.db
 *.csv
 !sample_fake_news.csv
 
+# Environment variables
+.env
+
 # Logs
 *.log
 
