@@ -36,7 +36,8 @@ class FakeNewsModel:
 
     def __init__(self, model_type="logistic"):
         if model_type not in MODELS:
-            raise ValueError(f"Unknown model type '{model_type}'. Choose from {list(MODELS.keys())}")
+            raise ValueError(
+                f"Unknown model type '{model_type}'. Choose from {list(MODELS.keys())}")
         self.model_type = model_type
         self.model = MODELS[model_type]()
         self.preprocessor = DataPreprocessor()
@@ -44,11 +45,24 @@ class FakeNewsModel:
         self.metrics: dict = {}
 
     # ── training ────────────────────────────────────────────────────────
-    def train(self, dataset_path="FakeNewsNet.csv"):
-        """Train and evaluate the model. Returns True on success."""
-        print(f"[1/5] Loading dataset from {dataset_path} …")
-        df = self.preprocessor.load_and_preprocess(dataset_path)
-        print(f"       {len(df)} samples  |  Fake {df['label'].sum()}  |  Real {(df['label']==0).sum()}")
+    def train(self, dataset_path="FakeNewsNet.csv", news_dataset_folder=None):
+        """Train and evaluate the model. Returns True on success.
+
+        Args:
+            dataset_path: Path to FakeNewsNet.csv.
+            news_dataset_folder: Optional path to News_Dataset folder containing
+                Fake.csv and True.csv.  When provided, both datasets are combined.
+        """
+        if news_dataset_folder:
+            print(
+                f"[1/5] Loading combined dataset ('{dataset_path}' + '{news_dataset_folder}') …")
+            df = self.preprocessor.load_combined(
+                dataset_path, news_dataset_folder)
+        else:
+            print(f"[1/5] Loading dataset from {dataset_path} …")
+            df = self.preprocessor.load_and_preprocess(dataset_path)
+        print(
+            f"       {len(df)} samples  |  Fake {df['label'].sum()}  |  Real {(df['label']==0).sum()}")
 
         print("[2/5] Vectorising text (TF-IDF, bigrams) …")
         X, y = self.preprocessor.prepare_features(df)
@@ -76,7 +90,8 @@ class FakeNewsModel:
         print(f"  Precision: {self.metrics['precision']}")
         print(f"  Recall   : {self.metrics['recall']}")
         print(f"  F1-Score : {self.metrics['f1_score']}")
-        print(classification_report(y_test, y_pred, target_names=["Real", "Fake"]))
+        print(classification_report(
+            y_test, y_pred, target_names=["Real", "Fake"]))
 
         print("[5/5] Saving artefacts …")
         self._save()
@@ -109,7 +124,8 @@ class FakeNewsModel:
         cleaned = self.preprocessor.clean_text(text)
         vec = self.preprocessor.vectorizer.transform([cleaned])
         pred = self.model.predict(vec)[0]
-        proba = self.model.predict_proba(vec)[0] if hasattr(self.model, "predict_proba") else None
+        proba = self.model.predict_proba(vec)[0] if hasattr(
+            self.model, "predict_proba") else None
 
         if proba is not None:
             confidence = float(max(proba))
@@ -125,13 +141,13 @@ class FakeNewsModel:
         }
 
 
-def train_all_models(dataset_path="FakeNewsNet.csv"):
+def train_all_models(dataset_path="FakeNewsNet.csv", news_dataset_folder=None):
     """Train every available model and print a comparison table."""
     results = {}
     for name in MODELS:
         print(f"\n{'='*50}\n  MODEL: {name}\n{'='*50}")
         m = FakeNewsModel(name)
-        m.train(dataset_path)
+        m.train(dataset_path, news_dataset_folder=news_dataset_folder)
         results[name] = m.metrics
 
     print("\n\n══ Comparison ══════════════════════════════════")
@@ -139,10 +155,14 @@ def train_all_models(dataset_path="FakeNewsNet.csv"):
     print(header)
     print("─" * len(header))
     for name, met in results.items():
-        print(f"{name:<22} {met['accuracy']:>7.4f} {met['precision']:>7.4f} {met['recall']:>7.4f} {met['f1_score']:>7.4f}")
+        print(
+            f"{name:<22} {met['accuracy']:>7.4f} {met['precision']:>7.4f} {met['recall']:>7.4f} {met['f1_score']:>7.4f}")
     return results
 
 
 if __name__ == "__main__":
     os.makedirs("docs", exist_ok=True)
-    train_all_models()
+    news_folder = "News_Dataset" if os.path.isdir("News_Dataset") else None
+    # Train and save the production logistic regression model
+    m = FakeNewsModel("logistic")
+    m.train("FakeNewsNet.csv", news_dataset_folder=news_folder)

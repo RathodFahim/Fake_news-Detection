@@ -1,8 +1,9 @@
 """
 Data Preprocessing Module for Fake News Detection
-Handles FakeNewsNet.csv dataset with columns: title, news_url, source_domain, tweet_num, real
+Handles FakeNewsNet.csv and News_Dataset (Fake.csv / True.csv) datasets.
 """
 
+import os
 import pandas as pd
 import numpy as np
 import re
@@ -48,7 +49,8 @@ class DataPreprocessor:
         df = df.rename(columns=col_map)
 
         if "text" not in df.columns or "label" not in df.columns:
-            raise ValueError("Dataset must contain 'title'/'text' and 'real'/'label' columns")
+            raise ValueError(
+                "Dataset must contain 'title'/'text' and 'real'/'label' columns")
 
         # In FakeNewsNet, real=1 means real news.  We want label 1 = Fake.
         df["label"] = df["label"].apply(lambda x: 0 if x == 1 else 1)
@@ -57,6 +59,38 @@ class DataPreprocessor:
         df["cleaned_text"] = df["text"].apply(self.clean_text)
         df = df[df["cleaned_text"].str.len() > 0].reset_index(drop=True)
         return df
+
+    def load_news_dataset(self, folder_path):
+        """Load News_Dataset folder containing Fake.csv and True.csv."""
+        fake_path = os.path.join(folder_path, "Fake.csv")
+        true_path = os.path.join(folder_path, "True.csv")
+
+        df_fake = pd.read_csv(fake_path)
+        df_fake["label"] = 1  # Fake
+
+        df_true = pd.read_csv(true_path)
+        df_true["label"] = 0  # Real
+
+        df = pd.concat([df_fake, df_true], ignore_index=True)
+
+        # Use 'text' column (full article body) if available, fall back to 'title'
+        if "text" in df.columns:
+            df["text"] = df["text"].fillna(df.get("title", ""))
+        elif "title" in df.columns:
+            df = df.rename(columns={"title": "text"})
+
+        df = df.dropna(subset=["text"])
+        df["cleaned_text"] = df["text"].apply(self.clean_text)
+        df = df[df["cleaned_text"].str.len() > 0].reset_index(drop=True)
+        return df
+
+    def load_combined(self, csv_path, folder_path):
+        """Load FakeNewsNet.csv and News_Dataset, return combined DataFrame."""
+        df1 = self.load_and_preprocess(csv_path)
+        df2 = self.load_news_dataset(folder_path)
+        combined = pd.concat([df1, df2], ignore_index=True)
+        combined = combined[["text", "label", "cleaned_text"]]
+        return combined
 
     def prepare_features(self, df, fit=True):
         """TF-IDF vectorisation. Set fit=False for transform-only."""
@@ -83,6 +117,7 @@ class DataPreprocessor:
 if __name__ == "__main__":
     pp = DataPreprocessor()
     df = pp.load_and_preprocess("FakeNewsNet.csv")
-    print(f"Loaded {len(df)} samples  |  Fake: {df['label'].sum()}  |  Real: {(df['label']==0).sum()}")
+    print(
+        f"Loaded {len(df)} samples  |  Fake: {df['label'].sum()}  |  Real: {(df['label']==0).sum()}")
     X, y = pp.prepare_features(df)
     print(f"Feature matrix: {X.shape}")
