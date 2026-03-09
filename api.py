@@ -7,7 +7,7 @@ Endpoints:
 """
 
 from flask import Flask, request, jsonify
-from flask_cors import CORS
+from flask_cors import CORS  # type: ignore
 from model_training import FakeNewsModel
 from fact_check import search_claims
 import requests
