@@ -22,12 +22,69 @@ function showResult(data) {
 
   $("result").classList.add("show");
   $("error").style.display = "none";
+
+  showFactCheck(data.fact_check);
 }
 
 function showError(msg) {
   $("error").textContent = msg;
   $("error").style.display = "block";
   $("result").classList.remove("show");
+  $("factCheck").style.display = "none";
+}
+
+function showFactCheck(fc) {
+  const container = $("factCheck");
+  const verdict = $("factVerdict");
+  const claims = $("factClaims");
+  const unavail = $("factUnavailable");
+
+  claims.innerHTML = "";
+  unavail.style.display = "none";
+
+  if (!fc) { container.style.display = "none"; return; }
+
+  container.style.display = "block";
+
+  if (!fc.available) {
+    verdict.textContent = "Fact Check Unavailable";
+    verdict.className = "fact-verdict verdict-none";
+    unavail.style.display = "block";
+    return;
+  }
+
+  if (fc.error) {
+    verdict.textContent = "Fact Check Error";
+    verdict.className = "fact-verdict verdict-mixed";
+    claims.innerHTML = `<div class="fact-claim"><span class="fact-claim-rating">${fc.error}</span></div>`;
+    return;
+  }
+
+  const v = fc.verdict || "No fact-checks found";
+  const cls = v.includes("Real") ? "verdict-real"
+            : v.includes("Fake") ? "verdict-fake"
+            : v.includes("Mixed") ? "verdict-mixed"
+            : "verdict-none";
+  verdict.textContent = `Fact Check: ${v}`;
+  verdict.className = `fact-verdict ${cls}`;
+
+  if (fc.claims && fc.claims.length > 0) {
+    fc.claims.forEach((c) => {
+      const div = document.createElement("div");
+      div.className = "fact-claim";
+      div.innerHTML =
+        `<div class="fact-claim-text">${esc(c.claim_text).substring(0, 100)}</div>` +
+        `<div class="fact-claim-rating">Rating: ${esc(c.rating)} — ${esc(c.publisher)}</div>` +
+        (c.url ? `<a class="fact-claim-link" href="${esc(c.url)}" target="_blank">View review ↗</a>` : "");
+      claims.appendChild(div);
+    });
+  }
+}
+
+function esc(s) {
+  const d = document.createElement("div");
+  d.textContent = s || "";
+  return d.innerHTML;
 }
 
 function setLoading(btn, loading) {

@@ -99,6 +99,33 @@
 
     .error { color: var(--danger); font-size: 13px; margin-top: 10px; text-align: center; }
 
+    /* Fact Check */
+    .fact-check {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: #fff;
+      border: 1px solid #e9ecef;
+      animation: fadeIn 0.35s ease;
+    }
+    .fact-check-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .fact-check-icon { font-size: 16px; }
+    .fact-verdict { font-size: 13px; font-weight: 700; }
+    .fact-verdict.verdict-real { color: var(--success); }
+    .fact-verdict.verdict-fake { color: var(--danger); }
+    .fact-verdict.verdict-mixed { color: #e67e22; }
+    .fact-verdict.verdict-none { color: var(--muted); }
+    .fact-claim {
+      padding: 8px 0;
+      border-top: 1px solid #f0f0f0;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .fact-claim-text { font-weight: 600; margin-bottom: 2px; }
+    .fact-claim-rating { color: var(--muted); }
+    .fact-claim-link { font-size: 11px; }
+    .fact-unavail { font-size: 12px; color: var(--muted); font-style: italic; }
+
     .settings {
       margin-top: 14px;
       padding: 10px 12px;
@@ -156,6 +183,18 @@
         <div class="prob-bar"><div id="fakeBar" class="prob-bar-fill fake-fill"></div></div>
       </div>
     </div>
+    <!-- Fact Check -->
+    <div id="factCheck" class="fact-check" style="display:none">
+      <div class="fact-check-header">
+        <span class="fact-check-icon">🔎</span>
+        <span id="factVerdict" class="fact-verdict"></span>
+      </div>
+      <div id="factClaims"></div>
+      <div id="factUnavailable" class="fact-unavail" style="display:none">
+        Google Fact Check API not configured on the server.
+      </div>
+    </div>
+
     <div id="error" class="error" style="display:none"></div>
 
     <!-- Settings -->
