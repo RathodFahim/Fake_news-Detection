@@ -35,6 +35,19 @@ def _extract_text(url: str) -> str:
     return text[:5000]
 
 
+@app.route("/", methods=["GET"])
+def index():
+    return jsonify({
+        "app": "Fake News Detector API",
+        "endpoints": {
+            "POST /api/predict": "Send JSON {\"text\": \"...\"} to classify news",
+            "POST /api/predict-url": "Send JSON {\"url\": \"...\"} to scrape & classify",
+            "GET /api/health": "Health check",
+        },
+        "status": "running",
+    })
+
+
 @app.route("/api/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok", "model_loaded": model.is_trained})
