@@ -9,6 +9,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from model_training import FakeNewsModel
+from fact_check import search_claims
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -199,6 +200,44 @@ def show_prediction(result):
     col2.metric("🔴 Fake probability", f"{probs['Fake']:.2%}")
 
 
+def show_fact_check(text: str):
+    """Query the Google Fact Check API and display results."""
+    fc = search_claims(text)
+    if not fc["available"]:
+        st.info(
+            "ℹ️ **Google Fact Check API not configured.** "
+            "Set the `GOOGLE_FACT_CHECK_API_KEY` environment variable to enable. "
+            "[Get a free key →](https://console.cloud.google.com/apis/credentials)"
+        )
+        return fc
+    if fc["error"]:
+        st.warning(f"⚠️ Fact-check lookup error: {fc['error']}")
+        return fc
+    if not fc["claims"]:
+        st.info("🔎 No matching fact-checks found in Google's database for this text.")
+        return fc
+
+    verdict = fc["verdict"]
+    if verdict == "Verified Real":
+        st.success(f"✅ **Fact-Check Verdict: {verdict}**")
+    elif verdict == "Likely Fake":
+        st.error(f"🚨 **Fact-Check Verdict: {verdict}**")
+    else:
+        st.warning(f"⚠️ **Fact-Check Verdict: {verdict}**")
+
+    with st.expander(f"📋 {len(fc['claims'])} fact-check(s) found", expanded=True):
+        for i, claim in enumerate(fc["claims"], 1):
+            st.markdown(
+                f"**{i}. {claim['claim_text'][:120]}**\n\n"
+                f"- **Rating:** {claim['rating']}\n"
+                f"- **Publisher:** {claim['publisher']}\n"
+                f"- **Source:** [View full review]({claim['url']})"
+            )
+            if i < len(fc["claims"]):
+                st.markdown("---")
+    return fc
+
+
 # ── Main ───────────────────────────────────────────────────────────────
 def main():
     model = get_model()
@@ -264,10 +303,14 @@ def main():
             st.info(f"**Sample loaded:** {user_text}")
             result = model.predict(user_text)
             show_prediction(result)
+            st.markdown("#### 🌐 Google Fact Check")
+            show_fact_check(user_text)
         elif analyse_btn and user_text.strip():
             with st.spinner("Analysing…"):
                 result = model.predict(user_text)
             show_prediction(result)
+            st.markdown("#### 🌐 Google Fact Check")
+            show_fact_check(user_text)
         elif analyse_btn:
             st.warning("⚠️ Please enter some text to analyse.")
 
@@ -292,6 +335,8 @@ def main():
                             st.text(article_text[:2000])
                         result = model.predict(article_text)
                         show_prediction(result)
+                        st.markdown("#### 🌐 Google Fact Check")
+                        show_fact_check(article_text)
                 except Exception as e:
                     st.error(f"Failed to fetch URL: {e}")
         elif url_btn:

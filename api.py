@@ -9,6 +9,7 @@ Endpoints:
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from model_training import FakeNewsModel
+from fact_check import search_claims
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -60,6 +61,7 @@ def predict_text():
     if not text:
         return jsonify({"error": "No text provided"}), 400
     result = model.predict(text)
+    result["fact_check"] = search_claims(text)
     return jsonify(result)
 
 
@@ -75,6 +77,7 @@ def predict_url():
             return jsonify({"error": "Could not extract text from URL"}), 422
         result = model.predict(article_text)
         result["extracted_text"] = article_text[:500]
+        result["fact_check"] = search_claims(article_text)
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
