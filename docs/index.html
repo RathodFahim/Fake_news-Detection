@@ -153,7 +153,93 @@
       transition: border 0.2s;
     }
     .demo-box textarea:focus { border-color: var(--primary); }
-    .demo-btn {
+
+    .demo-tabs { display: flex; gap: 0; margin-bottom: 16px; border-bottom: 2px solid var(--border); }
+    .demo-tab {
+      padding: 10px 24px;
+      border: none;
+      background: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+    }
+    .demo-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .demo-tab:hover { color: var(--primary-dark); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .url-input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: border 0.2s;
+    }
+    .url-input:focus { border-color: var(--primary); }
+
+    .extracted-text {
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: #f1f3f5;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      max-height: 120px;
+      overflow-y: auto;
+      display: none;
+      word-break: break-word;
+    }
+    .extracted-text.show { display: block; }
+
+    .demo-error {
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: #f8d7da;
+      color: #721c24;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      display: none;
+      text-align: center;
+    }
+    .demo-error.show { display: block; }
+
+    .api-settings {
+      margin-top: 16px;
+      padding: 10px 14px;
+      background: #f8f9ff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .api-settings label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .api-settings input {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin-top: 4px;
+      font-family: monospace;
+    }
+
+    /* Result bars */
+    .result-detail { margin-top: 14px; }
+    .prob-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85rem; }
+    .prob-label { min-width: 50px; font-weight: 600; }
+    .prob-track { flex: 1; height: 10px; background: #e9ecef; border-radius: 5px; overflow: hidden; }
+    .prob-fill { height: 100%; border-radius: 5px; transition: width 0.6s ease; }
+    .prob-fill.real-fill { background: var(--success); }
+    .prob-fill.fake-fill { background: var(--danger); }
+    .prob-pct { min-width: 50px; text-align: right; font-weight: 500; }
+
+    .demo-btn{
       display: block;
       width: 100%;
       padding: 12px;
@@ -367,11 +453,37 @@
   <section style="background: #fff;">
     <div class="container">
       <h2>Try It Out</h2>
-      <p class="section-sub">This demo uses a lightweight client-side simulation. For full accuracy, run the Streamlit app or API.</p>
+      <p class="section-sub">Analyse news by pasting text or entering a URL — powered by the Flask API (<code>python api.py</code>)</p>
+
       <div class="demo-box">
-        <textarea id="demoText" placeholder="Enter a news headline here…">Scientists discover miracle cure that pharmaceutical companies are desperately trying to hide</textarea>
-        <button class="demo-btn" onclick="runDemo()">🔍 Analyse</button>
+        <!-- Tabs -->
+        <div class="demo-tabs">
+          <button class="demo-tab active" onclick="switchTab('text')">📝 Text Analysis</button>
+          <button class="demo-tab" onclick="switchTab('url')">🔗 URL Analysis</button>
+        </div>
+
+        <!-- Text tab -->
+        <div id="tab-text" class="tab-content active">
+          <textarea id="demoText" placeholder="Enter a news headline or article…">Scientists discover miracle cure that pharmaceutical companies are desperately trying to hide</textarea>
+          <button class="demo-btn" onclick="analyseText()">🔍 Analyse Text</button>
+        </div>
+
+        <!-- URL tab -->
+        <div id="tab-url" class="tab-content">
+          <input type="text" id="demoUrl" class="url-input" placeholder="https://example.com/news-article" />
+          <button class="demo-btn" onclick="analyseUrl()">🌐 Fetch & Analyse URL</button>
+          <div id="extractedText" class="extracted-text"></div>
+        </div>
+
+        <!-- Shared result area -->
         <div id="demoResult"></div>
+        <div id="demoError" class="demo-error"></div>
+
+        <!-- API settings -->
+        <div class="api-settings">
+          <label>API Endpoint</label>
+          <input type="text" id="apiBase" value="http://localhost:5000" />
+        </div>
       </div>
     </div>
   </section>
@@ -394,42 +506,6 @@
     </div>
   </section>
 
-  <!-- Getting Started -->
-  <section style="background: #fff;">
-    <div class="container">
-      <h2>Getting Started</h2>
-      <p class="section-sub">Up and running in under 2 minutes</p>
-      <div class="arch-diagram" style="text-align:left; font-size: 0.95rem;">
-        <p><strong>1. Clone & install</strong></p>
-        <pre style="background:#f1f3f5; padding:12px; border-radius:8px; margin:8px 0 20px; overflow-x:auto;"><code>git clone https://github.com/RathodFahim/Fake_news-Detection.git
-cd Fake_news-Detection
-pip install -r requirements.txt</code></pre>
-
-        <p><strong>2. Train the model</strong></p>
-        <pre style="background:#f1f3f5; padding:12px; border-radius:8px; margin:8px 0 20px; overflow-x:auto;"><code>python model_training.py</code></pre>
-
-        <p><strong>3. Launch the dashboard</strong></p>
-        <pre style="background:#f1f3f5; padding:12px; border-radius:8px; margin:8px 0 20px; overflow-x:auto;"><code>streamlit run app.py</code></pre>
-
-        <p><strong>4. (Optional) Start the API & use the Chrome extension</strong></p>
-        <pre style="background:#f1f3f5; padding:12px; border-radius:8px; margin:8px 0 20px; overflow-x:auto;"><code>python api.py
-# Then load browser-extension/ in chrome://extensions</code></pre>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <div class="container">
-    <div class="cta">
-      <h2>Ready to Fight Misinformation?</h2>
-      <p>Clone the repository, train the model, and start detecting fake news today.</p>
-      <div class="cta-btns">
-        <a class="cta-btn primary" href="https://github.com/RathodFahim/Fake_news-Detection" target="_blank">⭐ View on GitHub</a>
-        <a class="cta-btn secondary" href="https://github.com/RathodFahim/Fake_news-Detection/archive/refs/heads/main.zip">📥 Download ZIP</a>
-      </div>
-    </div>
-  </div>
-
   <footer>
     <p>Built with ❤️ by <a href="https://github.com/RathodFahim" target="_blank">RathodFahim</a> — Powered by Python & scikit-learn</p>
     <p style="margin-top:6px">© 2026 Fake News Detector. MIT License.</p>
@@ -446,51 +522,129 @@ pip install -r requirements.txt</code></pre>
         document.getElementById('mv-f1').textContent = (m.f1_score * 100).toFixed(1) + '%';
       })
       .catch(() => {
-        // Fallback values
         document.getElementById('mv-acc').textContent = '82.1%';
         document.getElementById('mv-prec').textContent = '61.6%';
         document.getElementById('mv-rec').textContent = '73.9%';
         document.getElementById('mv-f1').textContent = '67.1%';
       });
 
-    // Client-side demo (heuristic-based for demo purposes)
-    function runDemo() {
-      const text = document.getElementById('demoText').value.trim().toLowerCase();
+    // ── Tab switching ──
+    function switchTab(tab) {
+      document.querySelectorAll('.demo-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      document.querySelector(`.demo-tab[onclick="switchTab('${tab}')"]`).classList.add('active');
+      clearResult();
+    }
+
+    function getApi() { return (document.getElementById('apiBase').value || 'http://localhost:5000').replace(/\/+$/, ''); }
+
+    function clearResult() {
+      document.getElementById('demoResult').className = '';
+      document.getElementById('demoResult').innerHTML = '';
+      document.getElementById('demoResult').style.display = 'none';
+      document.getElementById('demoError').className = 'demo-error';
+      document.getElementById('extractedText').className = 'extracted-text';
+    }
+
+    function showError(msg) {
+      clearResult();
+      const el = document.getElementById('demoError');
+      el.textContent = '⚠️ ' + msg;
+      el.className = 'demo-error show';
+    }
+
+    function showResult(data) {
       const el = document.getElementById('demoResult');
-      if (!text) { el.style.display = 'none'; return; }
+      const isFake = data.prediction === 'Fake';
+      const rp = (data.probabilities.Real * 100).toFixed(1);
+      const fp = (data.probabilities.Fake * 100).toFixed(1);
 
-      const fakeSignals = [
-        'miracle', 'cure', 'secret', 'shocking', 'conspiracy', 'hide', 'they don\'t want',
-        'weird trick', 'breaking:', 'alien', 'lizard', 'mind control', 'coverup',
-        'cover up', 'big pharma', 'you won\'t believe', 'doctors hate', 'one weird',
-        'flat earth', 'reptilian', 'prophecy', 'end of world', 'fountain of youth'
-      ];
-      const realSignals = [
-        'government', 'announces', 'report', 'study', 'research', 'according to',
-        'officials', 'policy', 'quarterly', 'data shows', 'percent', 'university',
-        'published', 'election', 'economic'
-      ];
-
-      let fakeScore = 0, realScore = 0;
-      fakeSignals.forEach(s => { if (text.includes(s)) fakeScore += 2; });
-      realSignals.forEach(s => { if (text.includes(s)) realScore += 1.5; });
-
-      // Exclamation marks and ALL CAPS boost fake score
-      fakeScore += (text.match(/!/g) || []).length * 0.5;
-      fakeScore += (text.match(/[A-Z]{3,}/g) || []).length * 0.8;
-
-      const total = fakeScore + realScore || 1;
-      const fakePct = fakeScore / total;
-
-      el.className = '';
-      if (fakePct > 0.45) {
-        el.className = 'fake';
-        el.textContent = `🚨 Likely FAKE NEWS (${(fakePct * 100).toFixed(0)}% fake signals detected)`;
-      } else {
-        el.className = 'real';
-        el.textContent = `✅ Likely REAL NEWS (${((1 - fakePct) * 100).toFixed(0)}% real signals detected)`;
-      }
+      el.className = isFake ? 'fake' : 'real';
+      el.innerHTML = `
+        <div style="font-size:1.3rem;font-weight:700;margin-bottom:4px">
+          ${isFake ? '🚨 FAKE NEWS' : '✅ REAL NEWS'}
+        </div>
+        <div style="font-size:0.95rem;margin-bottom:12px">
+          Confidence: ${(data.confidence * 100).toFixed(1)}%
+        </div>
+        <div class="result-detail">
+          <div class="prob-row">
+            <span class="prob-label">🟢 Real</span>
+            <div class="prob-track"><div class="prob-fill real-fill" style="width:${rp}%"></div></div>
+            <span class="prob-pct">${rp}%</span>
+          </div>
+          <div class="prob-row">
+            <span class="prob-label">🔴 Fake</span>
+            <div class="prob-track"><div class="prob-fill fake-fill" style="width:${fp}%"></div></div>
+            <span class="prob-pct">${fp}%</span>
+          </div>
+        </div>`;
       el.style.display = 'block';
+      document.getElementById('demoError').className = 'demo-error';
+    }
+
+    function setLoading(btn, loading) {
+      btn.disabled = loading;
+      if (loading) btn.dataset.orig = btn.textContent;
+      btn.textContent = loading ? '⏳ Analysing…' : btn.dataset.orig;
+    }
+
+    // ── Text analysis (calls API) ──
+    async function analyseText() {
+      const btn = document.querySelector('#tab-text .demo-btn');
+      const text = document.getElementById('demoText').value.trim();
+      if (!text) { showError('Please enter some text to analyse.'); return; }
+      setLoading(btn, true);
+      clearResult();
+      try {
+        const resp = await fetch(getApi() + '/api/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        const data = await resp.json();
+        if (data.error) throw new Error(data.error);
+        showResult(data);
+      } catch (e) {
+        showError(e.message === 'Failed to fetch'
+          ? 'Cannot reach API. Make sure "python api.py" is running on ' + getApi()
+          : e.message);
+      } finally {
+        setLoading(btn, false);
+      }
+    }
+
+    // ── URL analysis (calls API) ──
+    async function analyseUrl() {
+      const btn = document.querySelector('#tab-url .demo-btn');
+      const url = document.getElementById('demoUrl').value.trim();
+      if (!url) { showError('Please enter a news URL.'); return; }
+      setLoading(btn, true);
+      clearResult();
+      document.getElementById('extractedText').className = 'extracted-text';
+      try {
+        const resp = await fetch(getApi() + '/api/predict-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+        const data = await resp.json();
+        if (data.error) throw new Error(data.error);
+        // Show extracted text snippet
+        if (data.extracted_text) {
+          const et = document.getElementById('extractedText');
+          et.textContent = '📄 Extracted: ' + data.extracted_text;
+          et.className = 'extracted-text show';
+        }
+        showResult(data);
+      } catch (e) {
+        showError(e.message === 'Failed to fetch'
+          ? 'Cannot reach API. Make sure "python api.py" is running on ' + getApi()
+          : e.message);
+      } finally {
+        setLoading(btn, false);
+      }
     }
   </script>
 </body>
