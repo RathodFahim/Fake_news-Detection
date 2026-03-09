@@ -1,185 +1,171 @@
-# Fake News Detection Web Application
+# 🛡️ Fake News Detector
 
-A machine learning-powered web application that detects fake news articles using Natural Language Processing and Logistic Regression.
+An AI-powered platform that detects fake news articles using machine learning. Features an interactive Streamlit dashboard, REST API, and Chrome browser extension.
 
-## 🚀 Features
+> **Live demo →** [https://rathodfahim.github.io/Fake_news-Detection/](https://rathodfahim.github.io/Fake_news-Detection/)
 
-- **Real-time Prediction**: Analyze news articles instantly
-- **Interactive Web Interface**: Built with Streamlit
-- **Batch Analysis**: Upload CSV files for bulk analysis
-- **Model Metrics**: View accuracy, precision, recall, and F1-score
-- **Visual Analytics**: Probability charts and prediction distributions
-- **Sample Texts**: Pre-loaded examples for testing
+---
 
-## 🛠️ Tech Stack
+## ✨ Features
 
-- **Frontend**: Streamlit
-- **Backend**: Python
-- **ML Libraries**: Scikit-learn, NLTK
-- **Data Processing**: Pandas, NumPy
-- **Visualization**: Matplotlib, Seaborn
-- **Model**: Logistic Regression with TF-IDF vectorization
+| Feature | Description |
+|---------|-------------|
+| 📝 **Text Analysis** | Paste any headline or article and get an instant prediction with confidence scores |
+| 🔗 **URL Analysis** | Enter a news URL — article text is scraped and analysed automatically |
+| 📁 **Batch Analysis** | Upload a CSV file and get predictions for every row with downloadable results |
+| 📊 **Model Insights** | Interactive confusion matrix, metrics bar chart, and classification report |
+| ⚡ **REST API** | Flask API with `/api/predict` and `/api/predict-url` endpoints |
+| 🔌 **Chrome Extension** | Analyse any news page with one click from the browser toolbar |
+| 🌐 **GitHub Pages** | Static showcase site with live model metrics |
 
-## 📦 Installation
+---
 
-1. **Clone the repository**:
-   ```bash
-   git clone <repository-url>
-   cd fake_news_2
-   ```
+## 📊 Model Performance
 
-2. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+Trained on **23,196 articles** from the [FakeNewsNet](https://www.kaggle.com/) dataset with balanced class weights.
 
-3. **Download NLTK data** (automatic on first run):
-   ```python
-   import nltk
-   nltk.download('punkt')
-   nltk.download('stopwords')
-   ```
+| Metric | Score |
+|--------|-------|
+| Accuracy | 82.1% |
+| Precision | 61.6% |
+| Recall | 73.9% |
+| F1-Score | 67.1% |
 
-## 📊 Dataset
+---
 
-### Option 1: Kaggle Dataset (Recommended)
-1. Download the "Fake News" dataset from Kaggle
-2. Save as `fake_news.csv` in the project directory
-3. Ensure columns: `text` (news content) and `label` (0=Real, 1=Fake)
+## 🚀 Quick Start
 
-### Option 2: Sample Dataset
-The application automatically creates a sample dataset for testing if no main dataset is found.
+### 1. Clone & install
 
-## 🏃‍♂️ Running the Application
-
-### Method 1: Streamlit Web App
 ```bash
-streamlit run app.py
+git clone https://github.com/RathodFahim/Fake_news-Detection.git
+cd Fake_news-Detection
+pip install -r requirements.txt
 ```
 
-### Method 2: Train Model Separately
+### 2. Train the model
+
 ```bash
 python model_training.py
 ```
 
-## 📱 Usage
+This trains a Logistic Regression model on `FakeNewsNet.csv` and saves `model.pkl`, `tfidf_vectorizer.pkl`, and `model_metrics.pkl`.
 
-### Web Interface
-1. **Single Prediction**:
-   - Enter news text in the text area
-   - Click "Analyze News"
-   - View prediction with confidence score
+### 3. Launch the dashboard
 
-2. **Batch Analysis**:
-   - Upload CSV file with 'text' column
-   - Click "Analyze All Articles"
-   - Download results with predictions
-
-3. **Sample Testing**:
-   - Use pre-loaded sample texts
-   - Compare real vs fake news examples
-
-### Model Performance
-The sidebar displays:
-- Accuracy score
-- Precision score
-- Recall score
-- F1-score
-
-## 🔧 Project Structure
-
-```
-fake_news_2/
-├── app.py                 # Streamlit web application
-├── model_training.py      # ML model training and evaluation
-├── data_preprocessing.py  # Text preprocessing and feature extraction
-├── requirements.txt       # Python dependencies
-├── README.md             # Project documentation
-├── fake_news.csv         # Main dataset (user-provided)
-├── sample_fake_news.csv  # Sample dataset (auto-generated)
-├── logistic_model.pkl    # Trained model (generated)
-├── tfidf_vectorizer.pkl  # TF-IDF vectorizer (generated)
-└── model_metrics.pkl     # Model performance metrics (generated)
+```bash
+streamlit run app.py
 ```
 
-## 🧠 How It Works
+### 4. (Optional) Start the REST API
 
-1. **Text Preprocessing**:
-   - Convert to lowercase
-   - Remove punctuation and special characters
-   - Tokenization
-   - Remove stopwords
+```bash
+python api.py
+# API runs on http://localhost:5000
+```
 
-2. **Feature Extraction**:
-   - TF-IDF vectorization (5000 features)
-   - Transform text to numerical vectors
+### 5. (Optional) Load the Chrome extension
 
-3. **Model Training**:
-   - Logistic Regression classifier
-   - 80/20 train-test split
-   - Cross-validation for robust evaluation
-
-4. **Prediction**:
-   - Preprocess input text
-   - Transform using trained vectorizer
-   - Classify as Real (0) or Fake (1)
-   - Return confidence scores
-
-## 📈 Model Performance
-
-Expected performance on the Kaggle dataset:
-- **Accuracy**: ~92-95%
-- **Precision**: ~90-94%
-- **Recall**: ~89-93%
-- **F1-Score**: ~90-93%
-
-## 🎯 Sample Predictions
-
-### Real News Examples:
-- "Government announces new education policy"
-- "Scientists discover breakthrough in renewable energy"
-- "Stock market shows steady growth in technology sector"
-
-### Fake News Examples:
-- "Celebrity endorses miracle cure doctors don't want you to know"
-- "Local man loses 50 pounds with this one weird trick"
-- "Breaking: World leaders secretly controlled by aliens"
-
-## 🔮 Future Enhancements
-
-- **Deep Learning Models**: LSTM, BERT integration
-- **Multi-language Support**: Detect fake news in multiple languages
-- **Real-time News Feed**: Analyze live news articles
-- **Advanced Visualizations**: Word clouds, feature importance
-- **API Endpoint**: REST API for external integrations
-- **User Feedback**: Allow users to correct predictions
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
-## 🙏 Acknowledgments
-
-- Kaggle for the Fake News dataset
-- Scikit-learn for machine learning tools
-- Streamlit for the web framework
-- NLTK for natural language processing
-
-## 📞 Support
-
-For issues or questions:
-1. Check the documentation
-2. Review existing issues
-3. Create a new issue with detailed description
+1. Open `chrome://extensions/`
+2. Enable **Developer mode**
+3. Click **Load unpacked** → select the `browser-extension/` folder
+4. Click the extension icon on any news page to analyse it
 
 ---
 
-**Built with ❤️ using Python and Machine Learning**
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| ML Model | scikit-learn (Logistic Regression, TF-IDF) |
+| Dashboard | Streamlit, Plotly |
+| API | Flask, Flask-CORS |
+| Scraping | Requests, BeautifulSoup4 |
+| Extension | Chrome Manifest V3 |
+| Data | Pandas, NumPy |
+| Deployment | GitHub Pages, GitHub Actions |
+
+---
+
+## 📂 Project Structure
+
+```
+.
+├── app.py                      # Streamlit web dashboard
+├── api.py                      # Flask REST API
+├── model_training.py           # Model training & evaluation
+├── data_preprocessing.py       # Text cleaning & TF-IDF
+├── test_app.py                 # Test suite
+├── run_app.py                  # Quick-start script
+├── requirements.txt            # Python dependencies
+├── FakeNewsNet.csv             # Kaggle dataset (23,196 articles)
+├── model.pkl                   # Trained model (generated)
+├── tfidf_vectorizer.pkl        # TF-IDF vectorizer (generated)
+├── model_metrics.pkl           # Metrics (generated)
+├── browser-extension/          # Chrome extension
+│   ├── manifest.json
+│   ├── popup.html
+│   ├── popup.js
+│   └── icons/
+├── docs/                       # GitHub Pages site
+│   ├── index.html
+│   └── model_metrics.json
+├── .github/workflows/
+│   └── pages.yml               # GitHub Pages deployment
+└── README.md
+```
+
+---
+
+## 🔌 API Endpoints
+
+### `POST /api/predict`
+```json
+// Request
+{ "text": "Government announces new education policy" }
+
+// Response
+{
+  "prediction": "Real",
+  "confidence": 0.804,
+  "probabilities": { "Real": 0.804, "Fake": 0.196 }
+}
+```
+
+### `POST /api/predict-url`
+```json
+// Request
+{ "url": "https://example.com/news-article" }
+
+// Response
+{
+  "prediction": "Fake",
+  "confidence": 0.712,
+  "probabilities": { "Real": 0.288, "Fake": 0.712 },
+  "extracted_text": "First 500 chars of article…"
+}
+```
+
+### `GET /api/health`
+```json
+{ "status": "ok", "model_loaded": true }
+```
+
+---
+
+## 🧠 How It Works
+
+1. **Text Cleaning** — lowercase, remove URLs/HTML/special chars, collapse whitespace
+2. **Feature Extraction** — TF-IDF vectorisation with 10,000 features and bigrams
+3. **Classification** — Logistic Regression with balanced class weights (handles 75/25 class imbalance)
+4. **Probability Scoring** — outputs confidence and per-class probabilities
+
+---
+
+## 📄 License
+
+MIT License — see [LICENSE](LICENSE) for details.
+
+---
+
+**Built with ❤️ using Python & Machine Learning**

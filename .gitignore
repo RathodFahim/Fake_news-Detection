@@ -35,10 +35,7 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# Model files (optional - remove if you want to include trained models)
-*.pkl
-
-# Large datasets
+# Large datasets (CSV tracked via LFS or excluded)
 *.csv
 !sample_fake_news.csv
 

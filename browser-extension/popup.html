@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fake News Detector</title>
+  <style>
+    :root {
+      --primary: #667eea;
+      --success: #28a745;
+      --danger: #dc3545;
+      --bg: #f8f9ff;
+      --card: #ffffff;
+      --text: #212529;
+      --muted: #6c757d;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 380px;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      padding: 18px 20px;
+      text-align: center;
+    }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .header p { font-size: 11px; opacity: 0.85; margin-top: 4px; }
+
+    .body { padding: 16px 20px; }
+
+    .section-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    textarea {
+      width: 100%;
+      height: 90px;
+      border: 1px solid #dee2e6;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    textarea:focus { border-color: var(--primary); }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 11px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.88; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
+    .btn-secondary { background: #e9ecef; color: var(--text); margin-top: 8px; }
+
+    .divider { height: 1px; background: #e9ecef; margin: 16px 0; }
+
+    /* Result card */
+    .result { display: none; margin-top: 14px; }
+    .result.show { display: block; animation: fadeIn 0.35s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .result-card {
+      padding: 16px;
+      border-radius: 12px;
+      text-align: center;
+    }
+    .result-card.real { background: #d4edda; color: #155724; border-left: 4px solid var(--success); }
+    .result-card.fake { background: #f8d7da; color: #721c24; border-left: 4px solid var(--danger); }
+
+    .result-label { font-size: 20px; font-weight: 700; }
+    .result-conf { font-size: 13px; margin-top: 4px; }
+
+    .prob-bar-container { margin-top: 12px; }
+    .prob-bar-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+    .prob-bar { height: 8px; border-radius: 4px; background: #e9ecef; overflow: hidden; margin-bottom: 8px; }
+    .prob-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+    .prob-bar-fill.real-fill { background: var(--success); }
+    .prob-bar-fill.fake-fill { background: var(--danger); }
+
+    .error { color: var(--danger); font-size: 13px; margin-top: 10px; text-align: center; }
+
+    .settings {
+      margin-top: 14px;
+      padding: 10px 12px;
+      background: #fff;
+      border: 1px solid #e9ecef;
+      border-radius: 10px;
+    }
+    .settings label { font-size: 12px; color: var(--muted); }
+    .settings input {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 10px;
+      font-size: 10px;
+      color: var(--muted);
+      border-top: 1px solid #e9ecef;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🛡️ Fake News Detector</h1>
+    <p>ML-powered news credibility analysis</p>
+  </div>
+
+  <div class="body">
+    <!-- Analyse current page -->
+    <div class="section-label">Current Page</div>
+    <button id="analysePageBtn" class="btn btn-primary">🌐 Analyse This Page</button>
+
+    <div class="divider"></div>
+
+    <!-- Manual text -->
+    <div class="section-label">Or paste text</div>
+    <textarea id="manualText" placeholder="Paste a news headline or article…"></textarea>
+    <button id="analyseTextBtn" class="btn btn-secondary">🔍 Analyse Text</button>
+
+    <!-- Result -->
+    <div id="result" class="result">
+      <div id="resultCard" class="result-card">
+        <div id="resultLabel" class="result-label"></div>
+        <div id="resultConf" class="result-conf"></div>
+      </div>
+      <div class="prob-bar-container">
+        <div class="prob-bar-label"><span>🟢 Real</span><span id="realPct"></span></div>
+        <div class="prob-bar"><div id="realBar" class="prob-bar-fill real-fill"></div></div>
+        <div class="prob-bar-label"><span>🔴 Fake</span><span id="fakePct"></span></div>
+        <div class="prob-bar"><div id="fakeBar" class="prob-bar-fill fake-fill"></div></div>
+      </div>
+    </div>
+    <div id="error" class="error" style="display:none"></div>
+
+    <!-- Settings -->
+    <div class="divider"></div>
+    <div class="settings">
+      <label>API Endpoint</label>
+      <input id="apiUrl" type="text" value="http://localhost:5000" />
+    </div>
+  </div>
+
+  <div class="footer">Fake News Detector v1.0 — Powered by scikit-learn</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
