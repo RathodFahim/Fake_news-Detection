@@ -57,14 +57,14 @@ This trains a Logistic Regression model on `FakeNewsNet.csv` and saves `model.pk
 streamlit run app.py
 ```
 
-### 4. (Optional) Start the REST API
+### 4. Start the REST API
 
 ```bash
 python api.py
 # API runs on http://localhost:5000
 ```
 
-### 5. (Optional) Load the Chrome extension
+### 5. Load the Chrome extension
 
 1. Open `chrome://extensions/`
 2. Enable **Developer mode**
