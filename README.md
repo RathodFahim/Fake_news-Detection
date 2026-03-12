@@ -1,3 +1,12 @@
+---
+title: Fake News Detector API
+emoji: 🛡️
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+app_port: 7860
+---
+
 # 🛡️ Fake News Detector
 
 An AI-powered platform that detects fake news articles using machine learning. Features an interactive Streamlit dashboard, REST API, and Chrome browser extension.
