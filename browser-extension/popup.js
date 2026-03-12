@@ -3,7 +3,7 @@
 const $ = (id) => document.getElementById(id);
 
 function getApiUrl() {
-  return ($("apiUrl").value || "http://localhost:5000").replace(/\/+$/, "");
+  return ($("apiUrl").value || "https://rathodfahim23-fake-news-detector-api.hf.space").replace(/\/+$/, "");
 }
 
 function showResult(data) {

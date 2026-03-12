@@ -482,7 +482,7 @@
         <!-- API settings -->
         <div class="api-settings">
           <label>API Endpoint</label>
-          <input type="text" id="apiBase" value="http://localhost:5000" />
+          <input type="text" id="apiBase" value="https://rathodfahim23-fake-news-detector-api.hf.space" />
         </div>
       </div>
     </div>
@@ -537,7 +537,7 @@
       clearResult();
     }
 
-    function getApi() { return (document.getElementById('apiBase').value || 'http://localhost:5000').replace(/\/+$/, ''); }
+    function getApi() { return (document.getElementById('apiBase').value || 'https://rathodfahim23-fake-news-detector-api.hf.space').replace(/\/+$/, ''); }
 
     function clearResult() {
       document.getElementById('demoResult').className = '';
