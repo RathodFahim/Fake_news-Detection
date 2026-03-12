@@ -23,6 +23,7 @@ function showResult(data) {
   $("result").classList.add("show");
   $("error").style.display = "none";
 
+  showGeminiAnalysis(data.gemini_analysis);
   showFactCheck(data.fact_check);
 }
 
@@ -30,7 +31,55 @@ function showError(msg) {
   $("error").textContent = msg;
   $("error").style.display = "block";
   $("result").classList.remove("show");
+  $("geminiSection").style.display = "none";
   $("factCheck").style.display = "none";
+}
+
+function showGeminiAnalysis(ga) {
+  const container = $("geminiSection");
+  const verdict = $("geminiVerdict");
+  const details = $("geminiDetails");
+
+  details.innerHTML = "";
+
+  if (!ga) { container.style.display = "none"; return; }
+
+  container.style.display = "block";
+
+  if (!ga.available) {
+    verdict.textContent = "Gemini AI Unavailable";
+    verdict.className = "fact-verdict verdict-none";
+    details.innerHTML = `<div class="fact-claim"><span class="fact-claim-rating">API key not configured</span></div>`;
+    return;
+  }
+
+  if (ga.error) {
+    verdict.textContent = "Gemini AI Error";
+    verdict.className = "fact-verdict verdict-mixed";
+    details.innerHTML = `<div class="fact-claim"><span class="fact-claim-rating">${esc(ga.error)}</span></div>`;
+    return;
+  }
+
+  const v = ga.verdict || "Uncertain";
+  const cls = v === "Real" ? "verdict-real"
+            : v === "Fake" ? "verdict-fake"
+            : "verdict-mixed";
+  verdict.textContent = `Gemini AI: ${v} — ${(ga.confidence * 100).toFixed(0)}%`;
+  verdict.className = `fact-verdict ${cls}`;
+
+  let html = `<div class="fact-claim">
+    <div class="fact-claim-text">Credibility: ${ga.credibility_score}/100 · Model: ${esc(ga.model_used || "N/A")}</div>
+    ${ga.reasoning ? `<div class="fact-claim-rating">${esc(ga.reasoning)}</div>` : ""}
+  </div>`;
+
+  if (ga.red_flags && ga.red_flags.length > 0) {
+    html += `<div class="fact-claim">
+      <div class="fact-claim-text">🚩 Red Flags</div>
+      ${ga.red_flags.map(f => `<div class="fact-claim-rating">• ${esc(f)}</div>`).join("")}
+    </div>`;
+  }
+
+  details.innerHTML = html;
 }
 
 function showFactCheck(fc) {

@@ -13,6 +13,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from model_training import FakeNewsModel
 from fact_check import search_claims
+from gemini_analysis import analyze_with_gemini
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -241,6 +242,46 @@ def show_fact_check(text: str):
     return fc
 
 
+def show_gemini_analysis(text: str):
+    """Run Gemini AI analysis and display results."""
+    ga = analyze_with_gemini(text)
+    if not ga["available"]:
+        st.info(
+            "ℹ️ **Gemini AI not configured.** "
+            "Set the `GEMINI_API_KEY` environment variable to enable. "
+            "[Get a free key →](https://aistudio.google.com/apikey)"
+        )
+        return ga
+    if ga["error"]:
+        st.warning(f"⚠️ Gemini analysis error: {ga['error']}")
+        return ga
+
+    verdict = ga["verdict"]
+    confidence = ga["confidence"]
+    score = ga["credibility_score"]
+
+    if verdict == "Real":
+        st.success(f"✅ **Gemini AI Verdict: {verdict}** — {confidence:.0%} confidence")
+    elif verdict == "Fake":
+        st.error(f"🚨 **Gemini AI Verdict: {verdict}** — {confidence:.0%} confidence")
+    else:
+        st.warning(f"⚠️ **Gemini AI Verdict: {verdict}** — {confidence:.0%} confidence")
+
+    col1, col2 = st.columns(2)
+    col1.metric("🧠 Credibility Score", f"{score}/100")
+    col2.metric("🤖 Model Used", ga["model_used"] or "N/A")
+
+    if ga["reasoning"]:
+        st.markdown(f"**Reasoning:** {ga['reasoning']}")
+
+    if ga["red_flags"]:
+        with st.expander(f"🚩 {len(ga['red_flags'])} Red Flag(s) Identified", expanded=True):
+            for flag in ga["red_flags"]:
+                st.markdown(f"- {flag}")
+
+    return ga
+
+
 # ── Main ───────────────────────────────────────────────────────────────
 def main():
     model = get_model()
@@ -306,12 +347,16 @@ def main():
             st.info(f"**Sample loaded:** {user_text}")
             result = model.predict(user_text)
             show_prediction(result)
+            st.markdown("#### 🤖 Gemini AI Analysis")
+            show_gemini_analysis(user_text)
             st.markdown("#### 🌐 Google Fact Check")
             show_fact_check(user_text)
         elif analyse_btn and user_text.strip():
             with st.spinner("Analysing…"):
                 result = model.predict(user_text)
             show_prediction(result)
+            st.markdown("#### 🤖 Gemini AI Analysis")
+            show_gemini_analysis(user_text)
             st.markdown("#### 🌐 Google Fact Check")
             show_fact_check(user_text)
         elif analyse_btn:
@@ -338,6 +383,8 @@ def main():
                             st.text(article_text[:2000])
                         result = model.predict(article_text)
                         show_prediction(result)
+                        st.markdown("#### 🤖 Gemini AI Analysis")
+                        show_gemini_analysis(article_text)
                         st.markdown("#### 🌐 Google Fact Check")
                         show_fact_check(article_text)
                 except Exception as e:

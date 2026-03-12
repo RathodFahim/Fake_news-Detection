@@ -586,6 +586,32 @@
           </div>`;
       }
 
+      let geminiHtml = '';
+      if (data.gemini_analysis && data.gemini_analysis.available) {
+        const ga = data.gemini_analysis;
+        const gColor = ga.verdict === 'Real' ? 'var(--success)'
+          : ga.verdict === 'Fake' ? 'var(--danger)' : '#f0ad4e';
+        const gIcon = ga.verdict === 'Real' ? '✅'
+          : ga.verdict === 'Fake' ? '🚨' : '⚠️';
+        const redFlagsHtml = ga.red_flags && ga.red_flags.length
+          ? `<div style="margin-top:6px;font-size:0.8rem;color:var(--muted)">
+              <strong>🚩 Red Flags:</strong> ${ga.red_flags.join(' · ')}
+            </div>` : '';
+        geminiHtml = `
+          <div style="margin-top:16px;padding:12px 16px;border-radius:10px;background:rgba(102,126,234,0.07);border:1px solid var(--border)">
+            <div style="font-size:0.85rem;font-weight:600;margin-bottom:6px;color:var(--muted)">🤖 Gemini AI Analysis</div>
+            <div style="font-size:1rem;font-weight:700;color:${gColor};margin-bottom:4px">${gIcon} ${ga.verdict} — ${(ga.confidence * 100).toFixed(0)}% confidence</div>
+            <div style="font-size:0.85rem;margin-bottom:4px"><strong>Credibility:</strong> ${ga.credibility_score}/100 · <strong>Model:</strong> ${ga.model_used || 'N/A'}</div>
+            ${ga.reasoning ? `<div style="font-size:0.8rem;color:var(--muted);margin-top:4px">${ga.reasoning}</div>` : ''}
+            ${redFlagsHtml}
+          </div>`;
+      } else if (data.gemini_analysis && !data.gemini_analysis.available) {
+        geminiHtml = `
+          <div style="margin-top:16px;padding:10px 14px;border-radius:10px;background:rgba(0,0,0,0.03);font-size:0.8rem;color:var(--muted)">
+            ℹ️ Gemini AI not configured on backend
+          </div>`;
+      }
+
       el.innerHTML = `
         <div style="font-size:1.3rem;font-weight:700;margin-bottom:4px">
           ${isFake ? '🚨 FAKE NEWS' : '✅ REAL NEWS'}
@@ -605,6 +631,7 @@
             <span class="prob-pct">${fp}%</span>
           </div>
         </div>
+        ${geminiHtml}
         ${factCheckHtml}`;
       el.style.display = 'block';
       document.getElementById('demoError').className = 'demo-error';
